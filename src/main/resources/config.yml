@@ -1,0 +1,32 @@
+# PILLARS 1.6
+# by TVRZ_
+
+win-message:
+  - "%player% победил!"
+lose-message:
+  - "%player% выбыл"
+draw-message:
+  - "Ничья!"
+
+join-message:
+  - "<gray>[<green>+<gray>] %player% <white>%joined_players%/%required_players%"
+
+messages:
+  waiting-for-players: "<gray>Ожидание игроков..."
+  starting-in: "<green>Игра начнется через <yellow>%time%</yellow> сек."
+
+fastboard:
+  enabled: true
+  title: "PILLARS"
+  lines:
+    - " Ник: %player%"
+    - " Арена: %arena%"
+    - " Режим: %mode%"
+    - " До предмета: %timer%"
+    - "  &f- %timerFormated% &f-"
+    - " Осталось: %playersAlive%"
+
+velocity:
+  enabled: false
+  connect-to-lobby-on-game-end: false
+  velocity-lobby: "lobby"

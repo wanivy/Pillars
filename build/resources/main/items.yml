@@ -1,0 +1,158 @@
+enabled: true
+
+start-titles:
+  enabled: true
+
+  # Титры ПЕРЕД стартом
+  sequence:
+    - title: "<yellow>Игра начнётся через"
+      subtitle: "<gray>Приготовься"
+      fade-in: 10
+      stay: 40
+      fade-out: 10
+      delay-after: 60
+      sound:
+        name: "ENTITY_EXPERIENCE_ORB_PICKUP"
+        volume: 1.0
+        pitch: 1.0
+
+    - title: "<yellow>3"
+      subtitle: ""
+      fade-in: 0
+      stay: 20
+      fade-out: 0
+      delay-after: 20
+      sound:
+        name: "BLOCK_NOTE_BLOCK_PLING"
+        volume: 1.0
+        pitch: 0.5
+
+    - title: "<yellow>2"
+      subtitle: ""
+      fade-in: 0
+      stay: 20
+      fade-out: 0
+      delay-after: 20
+      sound:
+        name: "BLOCK_NOTE_BLOCK_PLING"
+        volume: 1.0
+        pitch: 0.7
+
+    - title: "<yellow>1"
+      subtitle: ""
+      fade-in: 0
+      stay: 20
+      fade-out: 0
+      delay-after: 20
+      sound:
+        name: "BLOCK_NOTE_BLOCK_PLING"
+        volume: 1.0
+        pitch: 1.0
+
+    - title: "<green>Старт!"
+      subtitle: "<gray>Удачи"
+      fade-in: 0
+      stay: 20
+      fade-out: 10
+      delay-after: 0
+      sound:
+        name: "ENTITY_PLAYER_LEVELUP"
+        volume: 1.2
+        pitch: 1.0
+
+  # Титры ПОСЛЕ старта
+  after:
+    - delay-after: 40
+
+    - title: "<aqua>Вперёд!"
+      subtitle: "<gray>Покажи всё, на что способен"
+      fade-in: 10
+      stay: 40
+      fade-out: 20
+      delay-after: 0
+      sound:
+        name: "ENTITY_ENDER_DRAGON_FLAP"
+        volume: 0.8
+        pitch: 1.2
+
+end-titles:
+  win:
+    enabled: true
+    sequence:
+      - title: "<gold><bold>Игра закончена!</bold></gold>"
+        subtitle: "<green>Игрок %player% выиграл игру!"
+        fade-in: 10
+        stay: 50
+        fade-out: 10
+        delay-after: 70
+        sound:
+          name: "ENTITY_PLAYER_LEVELUP"
+          volume: 1.2
+          pitch: 1.0
+
+      - title: "<yellow>Поздравляем!"
+        subtitle: "<gray>Отличная игра, %player%!"
+        fade-in: 5
+        stay: 40
+        fade-out: 10
+        delay-after: 55
+        sound:
+          name: "BLOCK_NOTE_BLOCK_CHIME"
+          volume: 1.0
+          pitch: 1.0
+
+  draw:
+    enabled: true
+    sequence:
+      - title: "<gray><bold>Ничья!</bold></gray>"
+        subtitle: "<yellow>Игра завершилась без победителя"
+        fade-in: 10
+        stay: 50
+        fade-out: 0
+        delay-after: 60
+        sound:
+          name: "BLOCK_NOTE_BLOCK_BASS"
+          volume: 1.0
+          pitch: 1.0
+
+      - title: "<gold>Все игроки одинаково хороши!"
+        subtitle: ""
+        fade-in: 5
+        stay: 40
+        fade-out: 10
+        delay-after: 55
+        sound:
+          name: "BLOCK_NOTE_BLOCK_HARP"
+          volume: 1.0
+          pitch: 1.0
+
+death-title:
+  enabled: true
+  sequence:
+    - title: "<red><bold>Вы погибли!</bold></red>"
+      subtitle: ""
+      fade-in: 10
+      stay: 40
+      fade-out: 10
+      delay-after: 0
+      sound:
+        name: "ENTITY_PLAYER_HURT"
+        volume: 1.0
+        pitch: 1.0
+
+potion-effects:
+  enabled: true
+  effects:
+    - type: "SLOW_FALLING"
+      duration: 2
+      amplifier: 1
+      ambient: false
+      particles: true
+
+block-move:
+  enabled: true
+  duration: 1.5
+
+random-item: true
+random-command:
+  enabled: false

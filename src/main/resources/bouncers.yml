@@ -1,0 +1,35 @@
+enabled: false
+
+start-titles:
+  enabled: false
+
+death-titles:
+  enabled: false
+
+end-titles:
+  enabled: false
+
+random-item: false
+
+# Команды запускаются рандомно для всех игроков в игре
+# %world% Заменяется на мир в котором запущенна игра
+# %player% Заменяется на ник игрока
+# %randomItem% Заменяется на рандомный предмет/блок
+# В игре эти команды запускаются для каждого игрока, то есть запусков будет столько, сколько игроков в игре (осталось)
+commands:
+  - "give %player% snowball 1"
+  - "give %player% egg 1"
+  - "execute in %world% run summon lightning_bolt %random-int% %random-int% %random-int%"
+
+# Через random-commands можно сделать события в игре
+random-command:
+  enabled: false
+  delay: 30 # Секунд
+
+  # Список команд, из которого запустится рандомная
+  # %world% Заменяется на мир в котором запущенна игра
+  # %randomPlayer% Заменяется на ник игрока
+  # %randomItem% Заменяется на рандомный предмет/блок
+  commands:
+    - "execute at %randomPlayer% run summon lightning_bolt ~ ~ ~"
+    - "execute at %randomPlayer% run summon lightning_bolt ~ ~ ~;say @a[world=\"%world%\"] В %randomPlayer% попала молния"
