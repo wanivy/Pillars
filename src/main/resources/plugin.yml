@@ -3,12 +3,13 @@ version: '${version}'
 
 main: dev.tvrz.pillars.Main
 paperPluginLoader: dev.tvrz.pillars.MainLoader
-api-version: '1.21.11'
+api-version: '1.21.4'
 load: POSTWORLD
-depend: [Parties]
 softdepend: [Parties]
 commands:
   pillars:
     usage: "/pillars <party> <settings>"
   pillars-reload:
     usage: "/pillars-reload"
+  pillars-status:
+    usage: "/pillars-status"

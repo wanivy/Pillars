@@ -1,5 +1,6 @@
 package dev.tvrz.pillars;
 
+import dev.tvrz.pillars.commands.status;
 import fr.mrmicky.fastboard.FastBoard;
 
 import org.bukkit.configuration.ConfigurationSection;
@@ -28,6 +29,7 @@ public final class Main extends JavaPlugin {
         getCommand("pillars").setExecutor(new pillars(this));
         getCommand("pillars").setTabCompleter(new pillars(this));
         getCommand("pillars-reload").setExecutor(new reload(this));
+        getCommand("pillars-status").setExecutor(new status(this));
         getServer().getPluginManager().registerEvents(new pillarsEventListeners(this), this);
 
         File modesFolder = new File(getDataFolder(), "modes");
