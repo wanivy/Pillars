@@ -1,18 +1,25 @@
-enabled: true
+# ==================================================
+#   КОНФИГ РЕЖИМА items
+# ==================================================
 
+enabled: true   # Выключает режим
+
+# --------------------------------------------------
+# Титры перед стартом игры (обратный отсчёт)
+# --------------------------------------------------
 start-titles:
   enabled: true
 
-  # Титры ПЕРЕД стартом
+  # Последовательность титров ПЕРЕД стартом (отсчёт "3, 2, 1, Старт!")
   sequence:
     - title: "<yellow>Игра начнётся через"
       subtitle: "<gray>Приготовься"
-      fade-in: 10
-      stay: 40
-      fade-out: 10
-      delay-after: 60
+      fade-in: 10           # тиков на появление
+      stay: 40              # тиков на удержание
+      fade-out: 10          # тиков на исчезновение
+      delay-after: 60       # пауза перед следующим титром
       sound:
-        name: "ENTITY_EXPERIENCE_ORB_PICKUP"
+        name: "entity.experience_orb.pickup"
         volume: 1.0
         pitch: 1.0
 
@@ -23,7 +30,7 @@ start-titles:
       fade-out: 0
       delay-after: 20
       sound:
-        name: "BLOCK_NOTE_BLOCK_PLING"
+        name: "block.note_block.pling"
         volume: 1.0
         pitch: 0.5
 
@@ -34,7 +41,7 @@ start-titles:
       fade-out: 0
       delay-after: 20
       sound:
-        name: "BLOCK_NOTE_BLOCK_PLING"
+        name: "block.note_block.pling"
         volume: 1.0
         pitch: 0.7
 
@@ -45,7 +52,7 @@ start-titles:
       fade-out: 0
       delay-after: 20
       sound:
-        name: "BLOCK_NOTE_BLOCK_PLING"
+        name: "block.note_block.pling"
         volume: 1.0
         pitch: 1.0
 
@@ -56,13 +63,13 @@ start-titles:
       fade-out: 10
       delay-after: 0
       sound:
-        name: "ENTITY_PLAYER_LEVELUP"
+        name: "entity.player.levelup"
         volume: 1.2
         pitch: 1.0
 
-  # Титры ПОСЛЕ старта
+  # Титры ПОСЛЕ старта (показываются с задержкой, когда игра уже идёт)
   after:
-    - delay-after: 40
+    - delay-after: 40      # пауза перед показом этого блока
 
     - title: "<aqua>Вперёд!"
       subtitle: "<gray>Покажи всё, на что способен"
@@ -71,11 +78,16 @@ start-titles:
       fade-out: 20
       delay-after: 0
       sound:
-        name: "ENTITY_ENDER_DRAGON_FLAP"
+        name: "entity.ender_dragon.flap"
         volume: 0.8
         pitch: 1.2
 
+# --------------------------------------------------
+# Титры окончания игры
+# --------------------------------------------------
 end-titles:
+
+  # Показываются, если есть победитель
   win:
     enabled: true
     sequence:
@@ -86,7 +98,7 @@ end-titles:
         fade-out: 10
         delay-after: 70
         sound:
-          name: "ENTITY_PLAYER_LEVELUP"
+          name: "entity.player.levelup"
           volume: 1.2
           pitch: 1.0
 
@@ -97,10 +109,11 @@ end-titles:
         fade-out: 10
         delay-after: 55
         sound:
-          name: "BLOCK_NOTE_BLOCK_CHIME"
+          name: "block.note_block.chime"
           volume: 1.0
           pitch: 1.0
 
+  # Показываются при ничьей
   draw:
     enabled: true
     sequence:
@@ -111,7 +124,7 @@ end-titles:
         fade-out: 0
         delay-after: 60
         sound:
-          name: "BLOCK_NOTE_BLOCK_BASS"
+          name: "block.note_block.bass"
           volume: 1.0
           pitch: 1.0
 
@@ -122,10 +135,13 @@ end-titles:
         fade-out: 10
         delay-after: 55
         sound:
-          name: "BLOCK_NOTE_BLOCK_HARP"
+          name: "block.note_block.harp"
           volume: 1.0
           pitch: 1.0
 
+# --------------------------------------------------
+# Титр при смерти игрока
+# --------------------------------------------------
 death-title:
   enabled: true
   sequence:
@@ -136,23 +152,33 @@ death-title:
       fade-out: 10
       delay-after: 0
       sound:
-        name: "ENTITY_PLAYER_HURT"
+        name: "entity.player.hurt"
         volume: 1.0
         pitch: 1.0
 
+# --------------------------------------------------
+# Эффекты зелий, выдаваемые игрокам
+# --------------------------------------------------
 potion-effects:
   enabled: true
   effects:
-    - type: "SLOW_FALLING"
-      duration: 2
-      amplifier: 1
-      ambient: false
-      particles: true
+    - type: "SLOW_FALLING"   # тип эффекта (по названию Bukkit/Paper API)
+      duration: 2             # длительность в секундах
+      amplifier: 1            # уровень эффекта (0 = I, 1 = II и т.д.)
+      ambient: false           # мягкие частицы/полупрозрачный эффект
+      particles: true          # показывать ли частицы эффекта
 
+# --------------------------------------------------
+# Прочие настройки
+# --------------------------------------------------
+
+# Плавное перемещение блоков (например, платформ)
 block-move:
   enabled: true
-  duration: 1.5
+  duration: 1.5   # длительность перемещения в секундах
 
-random-item: true
+random-item: true   # выдавать ли случайный предмет игроку
+
+# Случайная команда (например, ивент/бонус)
 random-command:
   enabled: false
