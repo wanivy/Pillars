@@ -1,9 +1,5 @@
 package dev.tvrz.pillars.listeners;
 
-import com.alessiodp.parties.api.Parties;
-import com.alessiodp.parties.api.interfaces.PartiesAPI;
-import com.alessiodp.parties.api.interfaces.Party;
-import fr.mrmicky.fastboard.FastBoard;
 import org.bukkit.*;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -20,7 +16,14 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 import java.util.*;
 
+import com.alessiodp.parties.api.Parties;
+import com.alessiodp.parties.api.interfaces.PartiesAPI;
+import com.alessiodp.parties.api.interfaces.Party;
+
+import fr.mrmicky.fastboard.FastBoard;
+
 import static dev.tvrz.pillars.commands.pillars.*;
+import static dev.tvrz.pillars.utils.*;
 
 public class pillarsEventListeners implements Listener {
 
@@ -117,14 +120,12 @@ public class pillarsEventListeners implements Listener {
 
         if (to == null) return;
 
-        // Проверяем, изменились ли координаты X или Z (движение по горизонтали)
         if (from.getX() != to.getX() || from.getZ() != to.getZ()) {
 
-            // Создаем новую локацию, комбинируя старое положение X/Z и новую высоту Y
             Location fixedLocation = from.clone();
-            fixedLocation.setY(to.getY());         // Разрешаем падать вниз
-            fixedLocation.setYaw(to.getYaw());     // Разрешаем поворачивать голову (влево-вправо)
-            fixedLocation.setPitch(to.getPitch()); // Разрешаем поднимать/опускать взгляд
+            fixedLocation.setY(to.getY());
+            fixedLocation.setYaw(to.getYaw());
+            fixedLocation.setPitch(to.getPitch());
 
             // Подменяем точку назначения
             event.setTo(fixedLocation);
@@ -134,7 +135,6 @@ public class pillarsEventListeners implements Listener {
     @EventHandler
     public void onJoin(PlayerJoinEvent e) {
         Player player = e.getPlayer();
-        UUID uuid = player.getUniqueId();
 
         FastBoard board = new FastBoard(player);
         FileConfiguration config = plugin.getConfig();
@@ -145,9 +145,19 @@ public class pillarsEventListeners implements Listener {
             boards.put(player.getUniqueId(), board);
         }
 
-        if (playerSpawns.containsKey(uuid)) {
-            player.teleport(playerSpawns.get(uuid));
-            playerSpawns.remove(uuid);
+        Location spawnLoc = playerSpawns.remove(player.getUniqueId());
+        if (spawnLoc != null) {
+            player.teleport(spawnLoc);
+            player.getInventory().clear();
+            player.getEnderChest().clear();
+            player.setHealth(player.getMaxHealth());
+            player.setFoodLevel(20);
+            player.setSaturation(5.0f);
+            player.getActivePotionEffects().forEach(effect -> player.removePotionEffect(effect.getType()));
+            Map<String, String> spawnSettings = playerSpawnSettings.remove(player.getUniqueId());
+            if (player.getWorld().getName().startsWith("game_")) {
+                CreatePillar(Integer.parseInt(spawnSettings.get("X")), Integer.parseInt(spawnSettings.get("Y")), Integer.parseInt(spawnSettings.get("Z")), Integer.parseInt(spawnSettings.get("Height")), spawnSettings.get("Block"), spawnSettings.get("World"));
+            }
         }
     }
 

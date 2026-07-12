@@ -16,7 +16,7 @@ import java.nio.file.Files;
 import java.util.Map;
 import java.util.UUID;
 
-import static dev.tvrz.pillars.commands.pillars.updateBoard;
+import static dev.tvrz.pillars.utils.updateBoard;
 import static dev.tvrz.pillars.utils.loadEnabledModes;
 
 public final class Main extends JavaPlugin {
@@ -31,6 +31,8 @@ public final class Main extends JavaPlugin {
         getCommand("pillars-reload").setExecutor(new reload(this));
         getCommand("pillars-status").setExecutor(new status(this));
         getServer().getPluginManager().registerEvents(new pillarsEventListeners(this), this);
+
+        new utils(this);
 
         File modesFolder = new File(getDataFolder(), "modes");
         if (!modesFolder.exists()) {
