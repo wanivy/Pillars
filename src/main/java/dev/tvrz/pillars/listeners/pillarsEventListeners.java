@@ -22,6 +22,10 @@ import com.alessiodp.parties.api.interfaces.Party;
 
 import fr.mrmicky.fastboard.FastBoard;
 
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.minimessage.MiniMessage;
+import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
+
 import static dev.tvrz.pillars.commands.pillars.*;
 import static dev.tvrz.pillars.utils.*;
 
@@ -30,6 +34,7 @@ public class pillarsEventListeners implements Listener {
     private static JavaPlugin plugin = null;
     public static Map<UUID, FastBoard> boards = new HashMap<>();
     private static PartiesAPI partiesAPI;
+    private static final MiniMessage miniMessage = MiniMessage.miniMessage();
 
     public pillarsEventListeners(JavaPlugin plugin) {
         this.plugin = plugin;
@@ -91,7 +96,7 @@ public class pillarsEventListeners implements Listener {
                 Player p = Bukkit.getPlayer(playerId);
                 if (p != null && p.isOnline()) {
                     for (String msg : loseMessage) {
-                        p.sendMessage(ChatColor.translateAlternateColorCodes('&', msg.replace("%player%", player.getName())));
+                        p.sendMessage(miniMessage.deserialize(msg.replace("%player%", player.getName())));
                     }
                 }
             }
@@ -141,7 +146,8 @@ public class pillarsEventListeners implements Listener {
         ConfigurationSection scoreboard = config.getConfigurationSection("fastboard");
         if (scoreboard != null && scoreboard.getBoolean("enabled")) {
             String title = scoreboard.get("title").toString();
-            board.updateTitle(ChatColor.translateAlternateColorCodes('&', title));
+            Component titleComponent = miniMessage.deserialize(title);
+            board.updateTitle(LegacyComponentSerializer.legacySection().serialize(titleComponent));
             boards.put(player.getUniqueId(), board);
         }
 
