@@ -1,6 +1,7 @@
 package dev.tvrz.pillars.listeners;
 
 import org.bukkit.*;
+import org.bukkit.attribute.Attribute;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
@@ -26,8 +27,8 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 
-import static dev.tvrz.pillars.commands.pillars.*;
-import static dev.tvrz.pillars.utils.*;
+import static dev.tvrz.pillars.commands.PillarsCommand.*;
+import static dev.tvrz.pillars.managers.UtilsManager.*;
 
 public class pillarsEventListeners implements Listener {
 
@@ -37,7 +38,7 @@ public class pillarsEventListeners implements Listener {
     private static final MiniMessage miniMessage = MiniMessage.miniMessage();
 
     public pillarsEventListeners(JavaPlugin plugin) {
-        this.plugin = plugin;
+        pillarsEventListeners.plugin = plugin;
         partiesAPI = Parties.getApi();
     }
 
@@ -62,8 +63,16 @@ public class pillarsEventListeners implements Listener {
             return;
         }
 
-        Party gameParty = partiesAPI.getPartyOfPlayer(Bukkit.getPlayerUniqueId(player.getName()));
-        String settingsString = activeGames.get("game_" + gameParty.getName());
+        UUID playerUUID = Bukkit.getPlayerUniqueId(player.getName());
+        if (playerUUID == null) return;
+
+        Party gameParty = partiesAPI.getPartyOfPlayer(playerUUID);
+        if (gameParty == null) return;
+
+        String partyName = gameParty.getName();
+        if (partyName == null) return;
+
+        String settingsString = activeGames.get("game_" + partyName);
         Map<String, String> settings = ParseSettings(settingsString);
 
         int x = Integer.parseInt(settings.getOrDefault("deathSpawnX", "0"));
@@ -78,18 +87,24 @@ public class pillarsEventListeners implements Listener {
 
     @EventHandler
     public void onPlayerDeath(PlayerDeathEvent event) {
-        event.setDeathMessage(null);
+        event.deathMessage(null);
         Player player = event.getEntity();
         World world = player.getWorld();
         FileConfiguration config = plugin.getConfig();
         if (world.getName().startsWith("game_") && player.getGameMode().equals(GameMode.SURVIVAL)) {
             player.setGameMode(GameMode.SPECTATOR);
             List<String> loseMessage = config.getStringList("lose-message");
-            Party gameParty = partiesAPI.getPartyOfPlayer(Bukkit.getPlayerUniqueId(player.getName()));
+
+            UUID playerUUID = Bukkit.getPlayerUniqueId(player.getName());
+            if (playerUUID == null) return;
+
+            Party gameParty = partiesAPI.getPartyOfPlayer(playerUUID);
+            assert gameParty != null;
             String settingsString = activeGames.get("game_" + gameParty.getName());
             Map<String, String> settings = ParseSettings(settingsString);
             String selectedMode = settings.getOrDefault("mode", "items");
             ConfigurationSection mode = GetModeSection(selectedMode);
+            assert mode != null;
             ConfigurationSection deathTitles = mode.getConfigurationSection("death-titles");
             PlayTitles(world.getName(), deathTitles, null, player, "sequence");
             for (UUID playerId : gameParty.getMembers()) {
@@ -123,8 +138,6 @@ public class pillarsEventListeners implements Listener {
         Location from = event.getFrom();
         Location to = event.getTo();
 
-        if (to == null) return;
-
         if (from.getX() != to.getX() || from.getZ() != to.getZ()) {
 
             Location fixedLocation = from.clone();
@@ -132,7 +145,6 @@ public class pillarsEventListeners implements Listener {
             fixedLocation.setYaw(to.getYaw());
             fixedLocation.setPitch(to.getPitch());
 
-            // Подменяем точку назначения
             event.setTo(fixedLocation);
         }
     }
@@ -145,10 +157,12 @@ public class pillarsEventListeners implements Listener {
         FileConfiguration config = plugin.getConfig();
         ConfigurationSection scoreboard = config.getConfigurationSection("fastboard");
         if (scoreboard != null && scoreboard.getBoolean("enabled")) {
-            String title = scoreboard.get("title").toString();
-            Component titleComponent = miniMessage.deserialize(title);
-            board.updateTitle(LegacyComponentSerializer.legacySection().serialize(titleComponent));
-            boards.put(player.getUniqueId(), board);
+            Object title = scoreboard.get("title");
+            if (title != null) {
+                Component titleComponent = miniMessage.deserialize(title.toString());
+                board.updateTitle(LegacyComponentSerializer.legacySection().serialize(titleComponent));
+                boards.put(player.getUniqueId(), board);
+            }
         }
 
         Location spawnLoc = playerSpawns.remove(player.getUniqueId());
@@ -156,12 +170,18 @@ public class pillarsEventListeners implements Listener {
             player.teleport(spawnLoc);
             player.getInventory().clear();
             player.getEnderChest().clear();
-            player.setHealth(player.getMaxHealth());
+            var maxHealthAttr = player.getAttribute(Attribute.MAX_HEALTH);
+            if (maxHealthAttr != null) {
+                double maxHealth = maxHealthAttr.getDefaultValue();
+                if (maxHealth > 0) {
+                    player.setHealth(maxHealth);
+                }
+            }
             player.setFoodLevel(20);
             player.setSaturation(5.0f);
             player.getActivePotionEffects().forEach(effect -> player.removePotionEffect(effect.getType()));
             Map<String, String> spawnSettings = playerSpawnSettings.remove(player.getUniqueId());
-            if (player.getWorld().getName().startsWith("game_")) {
+            if (spawnSettings != null && player.getWorld().getName().startsWith("game_")) {
                 CreatePillar(Integer.parseInt(spawnSettings.get("X")), Integer.parseInt(spawnSettings.get("Y")), Integer.parseInt(spawnSettings.get("Z")), Integer.parseInt(spawnSettings.get("Height")), spawnSettings.get("Block"), spawnSettings.get("World"));
             }
         }

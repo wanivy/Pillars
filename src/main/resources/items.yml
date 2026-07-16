@@ -92,7 +92,7 @@ end-titles:
     enabled: true
     sequence:
       - title: "<gold><bold>Игра закончена!</bold></gold>"
-        subtitle: "<green>Игрок %player% выиграл игру!"
+        subtitle: "<green>Игрок <player> выиграл игру!"
         fade-in: 10
         stay: 50
         fade-out: 10
@@ -103,7 +103,7 @@ end-titles:
           pitch: 1.0
 
       - title: "<yellow>Поздравляем!"
-        subtitle: "<gray>Отличная игра, %player%!"
+        subtitle: "<gray>Отличная игра, <player>!"
         fade-in: 5
         stay: 40
         fade-out: 10

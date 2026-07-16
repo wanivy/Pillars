@@ -1,5 +1,6 @@
-package dev.tvrz.pillars;
+package dev.tvrz.pillars.managers;
 
+import net.kyori.adventure.text.minimessage.tag.resolver.Placeholder;
 import org.bukkit.*;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.MemoryConfiguration;
@@ -24,21 +25,24 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 
-import static org.bukkit.Bukkit.getLogger;
-import static dev.tvrz.pillars.commands.pillars.gameArena;
-import static dev.tvrz.pillars.commands.pillars.gameMode;
-import static dev.tvrz.pillars.commands.pillars.gameTimers;
-import static dev.tvrz.pillars.commands.pillars.gameTimerF;
+import static dev.tvrz.pillars.commands.PillarsCommand.gameArena;
+import static dev.tvrz.pillars.commands.PillarsCommand.gameMode;
+import static dev.tvrz.pillars.commands.PillarsCommand.gameTimers;
+import static dev.tvrz.pillars.commands.PillarsCommand.gameTimerF;
 
-public class utils {
+public class UtilsManager {
 
     private static JavaPlugin plugin;
     private static final Random random = new Random();
     public static final List<String> enabledModes = new ArrayList<>();
     private static final MiniMessage miniMessage = MiniMessage.miniMessage();
 
-    public utils(JavaPlugin plugin) {
-        this.plugin = plugin;
+    public UtilsManager(JavaPlugin plugin) {
+        init(plugin);
+    }
+
+    public static void init(JavaPlugin plugin) {
+        UtilsManager.plugin = plugin;
     }
 
     private static final Set<String> WORLD_COPY_EXCLUDES = Set.of(
@@ -51,11 +55,13 @@ public class utils {
         File modesFolder = new File(plugin.getDataFolder(), "modes");
 
         if (!modesFolder.exists()) {
-            modesFolder.mkdirs();
+            if (!modesFolder.mkdirs()) {
+                plugin.getLogger().warning("Failed to create modes folder");
+            }
             return;
         }
 
-        File[] files = modesFolder.listFiles((dir, name) -> name.toLowerCase().endsWith(".yml"));
+        File[] files = modesFolder.listFiles((_, name) -> name.toLowerCase().endsWith(".yml"));
         if (files == null) return;
 
         for (File file : files) {
@@ -75,7 +81,7 @@ public class utils {
                 .collect(Collectors.toMap(
                         parts -> parts[0].trim(),
                         parts -> parts[1].trim(),
-                        (existing, replacement) -> replacement
+                        (_, replacement) -> replacement
                 ));
     }
 
@@ -119,13 +125,9 @@ public class utils {
 
     public static String format(Integer a, Integer b) {
         StringBuilder filled = new StringBuilder();
-        for (int i = 0; i < a - 1; i++) {
-            filled.append("▮");
-        }
+        filled.repeat("▮", Math.max(0, a - 1));
         StringBuilder empty = new StringBuilder();
-        for (int i = 0; i < b + 1; i++) {
-            empty.append("▮");
-        }
+        empty.repeat("▮", Math.max(0, b + 1));
         return "<white><b>" + filled + "</b></white><gray><b>" + empty + "</b></gray>";
     }
 
@@ -153,58 +155,52 @@ public class utils {
             out.writeUTF("Connect");
             out.writeUTF(targetServer);
         } catch (IOException e) {
-            e.printStackTrace();
+            plugin.getLogger().severe("Failed to send player to server: " + e.getMessage());
         }
 
         player.sendPluginMessage(plugin, "BungeeCord", b.toByteArray());
     }
 
     public static void updateBoard(FastBoard board, UUID playerUUID) {
+        if (plugin == null) return;
 
         Player player = Bukkit.getPlayer(playerUUID);
         if (player == null || !player.isOnline()) {
             return;
         }
 
-        Map<String, String> placeholders = new HashMap<>();
-        placeholders.put("%player%", player.getName());
-
         String worldName = player.getWorld().getName();
-
-        placeholders.put("%arena%", Objects.toString(gameArena.get(worldName), "Загрузка..."));
-        placeholders.put("%mode%", Objects.toString(gameMode.get(worldName), "Загрузка..."));
-        placeholders.put("%timer%", Objects.toString(gameTimers.get(worldName), "Загрузка..."));
-        placeholders.put("%timerFormated%", Objects.toString(gameTimerF.get(worldName), "Загрузка..."));
 
         long aliveCount = player.getWorld().getPlayers().stream()
                 .filter(p -> p.getGameMode() == GameMode.SURVIVAL)
                 .count();
-
-        placeholders.put("%playersAlive%", String.valueOf(aliveCount));
 
         ConfigurationSection fastboard = plugin.getConfig().getConfigurationSection("fastboard");
         if (fastboard == null) return;
 
         List<String> lines = fastboard.getStringList("lines").stream()
                 .map(line -> {
-                    for (Map.Entry<String, String> entry : placeholders.entrySet()) {
-                        line = line.replace(entry.getKey(), entry.getValue());
-                    }
-                    Component component = miniMessage.deserialize(line);
+                    Component component = miniMessage.deserialize(line,
+                            Placeholder.unparsed("player", player.getName()),
+                            Placeholder.unparsed("arena", Objects.toString(gameArena.get(worldName), "Загрузка...")),
+                            Placeholder.unparsed("mode", Objects.toString(gameMode.get(worldName), "Загрузка...")),
+                            Placeholder.unparsed("timer", Objects.toString(gameTimers.get(worldName), "Загрузка...")),
+                            Placeholder.unparsed("timer-formatted", Objects.toString(gameTimerF.get(worldName), "Загрузка...")),
+                            Placeholder.unparsed("players-alive", String.valueOf(aliveCount))
+                    );
                     return LegacyComponentSerializer.legacySection().serialize(component);
                 })
-                .collect(Collectors.toList());
+                .toList();
 
         board.updateLines(lines.toArray(new String[0]));
     }
 
-    public static double СalculateDiameter(int nPoints, double targetDist) {
+    public static double CalculateDiameter(int nPoints, double targetDist) {
         if (nPoints < 2) {
             return 0;
         }
         double angle = Math.PI / nPoints;
-        double diameter = targetDist / Math.sin(angle);
-        return diameter;
+        return targetDist / Math.sin(angle);
     }
 
     public static List<double[]> GetCirclePoints(double diameter, int n, double centerX, double centerY) {
@@ -228,7 +224,13 @@ public class utils {
 
         World world = Bukkit.getWorld(worldName);
 
-        List<Player> targetPlayers = (singlePlayer != null) ? List.of(singlePlayer) : world.getPlayers();
+        List<Player> targetPlayers;
+        if ((singlePlayer != null)) {
+            targetPlayers = List.of(singlePlayer);
+        } else {
+            assert world != null;
+            targetPlayers = world.getPlayers();
+        }
         if (targetPlayers.isEmpty()) return;
 
         for (Object obj : effects) {
@@ -245,16 +247,27 @@ public class utils {
 
             if (data == null) continue;
 
-            PotionEffect effect = new PotionEffect(
-                    PotionEffectType.getByName(data.getString("type").toUpperCase()),
-                    data.getInt("duration", 1) * 20,
-                    data.getInt("amplifier", 1),
-                    data.getBoolean("ambient", false),
-                    data.getBoolean("particles", false)
-            );
+            try {
+                @SuppressWarnings("deprecation")
+                PotionEffectType effectType = PotionEffectType.getByName(data.getString("type", "SPEED"));
+                if (effectType == null) {
+                    plugin.getLogger().warning("Unknown potion effect type: " + data.getString("type", "SPEED"));
+                    continue;
+                }
 
-            for (Player p : targetPlayers) {
-                Bukkit.getScheduler().runTask(plugin, () -> p.addPotionEffect(effect));
+                PotionEffect effect = new PotionEffect(
+                        effectType,
+                        data.getInt("duration", 1) * 20,
+                        data.getInt("amplifier", 1),
+                        data.getBoolean("ambient", false),
+                        data.getBoolean("particles", false)
+                );
+
+                for (Player p : targetPlayers) {
+                    Bukkit.getScheduler().runTask(plugin, () -> p.addPotionEffect(effect));
+                }
+            } catch (Exception e) {
+                plugin.getLogger().warning("Error applying potion effect: " + e.getMessage());
             }
         }
     }
@@ -341,6 +354,7 @@ public class utils {
                             try {
                                 NamespacedKey key = NamespacedKey.minecraft(soundData.getString("name", "entity.experience_orb.pickup"));
                                 Sound sound = Registry.SOUNDS.get(key);
+                                assert sound != null;
                                 p.playSound(p.getLocation(), sound,
                                         (float) soundData.getDouble("volume", 1.0),
                                         (float) soundData.getDouble("pitch", 1.0));
@@ -363,7 +377,7 @@ public class utils {
         }
     }
 
-    public static Boolean СreateWorld(String newWorld, Integer deathSpawnX, Integer deathSpawnY, Integer deathSpawnZ, Boolean border, Integer borderDiameter, Integer borderTime) {
+    public static Boolean CreateWorld(String newWorld, Integer deathSpawnX, Integer deathSpawnY, Integer deathSpawnZ, Boolean border, Integer borderDiameter, Integer borderTime) {
         if (Bukkit.getWorld(newWorld) != null) {
             return true;
         }
@@ -385,13 +399,13 @@ public class utils {
                 WorldBorder worldBorder = world.getWorldBorder();
                 worldBorder.setCenter(0.5, 0.5);
                 worldBorder.setSize(borderDiameter);
-                worldBorder.changeSize(1, borderTime*20);
+                worldBorder.changeSize(1, borderTime* 20L);
                 worldBorder.setDamageAmount(5.0);
                 worldBorder.setDamageBuffer(0);
             }
         } catch (Exception e) {
-            getLogger().warning(e.toString());
-            if (!Bukkit.getWorld(newWorld).equals(null)) {
+            plugin.getLogger().severe("Error creating world: " + e.getMessage());
+            if (Bukkit.getWorld(newWorld) != null) {
                 DeleteWorld(newWorld);
             }
             return false;

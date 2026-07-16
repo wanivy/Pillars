@@ -1,0 +1,21 @@
+name: Pillars
+version: '1.0.0'
+main: dev.tvrz.pillars.MainPaper
+description: "Pillars plugin for Paper servers"
+api-version: '1.21'
+authors: [TVRZ]
+folia-supported: true
+
+dependencies:
+  server:
+    Parties:
+      load: BEFORE
+      required: true
+
+permissions:
+  pillars.reload:
+    description: Allows the player to use the /pillars-reload command.
+    default: op
+  pillars.status:
+    description: Allows the player to use the /pillars-status command.
+    default: true
